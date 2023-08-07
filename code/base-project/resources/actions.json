@@ -1,0 +1,5 @@
+[
+    "install-core-services",
+    "install-app-templates",
+    "install-databases"
+]
