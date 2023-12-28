@@ -2,8 +2,9 @@
     "cmdName": "install",
     "mapped_commands": [{
       "id":"cmd1",
-      "command": "echo cmd1",
-      "dependency": []
+      "command": "echo enter your name && read x && echo Your name is $x",
+      "dependency": [],
+      "is_interactive": true
     },
     {
       "id":"cmd2",

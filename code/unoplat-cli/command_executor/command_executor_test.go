@@ -16,7 +16,7 @@ func TestCmdExec(t *testing.T) {
 	// Iterate over the commands and run them in separate goroutines
 	for _, cmdStr := range commands {
 		wg.Add(1)
-		go RunCommandWithColor(cmdStr, &wg, errChan, stdErrChan)
+		go RunCommandParallelyWithColor(cmdStr, &wg, errChan, stdErrChan)
 	}
 
 	// Wait for all child processes to finish

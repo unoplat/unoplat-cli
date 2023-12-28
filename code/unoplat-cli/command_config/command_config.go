@@ -15,9 +15,10 @@ type Config struct {
 }
 
 type MappedCommand struct {
-	ID         string   `json:"id"`
-	Command    string   `json:"command"`
-	Dependency []string `json:"dependency"`
+	ID            string   `json:"id"`
+	Command       string   `json:"command"`
+	Dependency    []string `json:"dependency"`
+	IsInteractive bool     `json:"is_interactive"`
 }
 
 func ParseFromFile(jsonFilePath string) (*Config, error) {

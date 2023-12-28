@@ -3,6 +3,7 @@ package command_executor
 import (
 	"bufio"
 	"io"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -11,66 +12,28 @@ import (
 
 var mu sync.Mutex
 
-func GetCommand(cmdStr string) *exec.Cmd {
-	mu.Lock()
-	defer mu.Unlock()
-	return exec.Command("sh", "-c", cmdStr)
+// Define an array of colors for legibility
+var colors = []*color.Color{
+	color.New(color.FgGreen),     // Green
+	color.New(color.FgBlue),      // Blue
+	color.New(color.FgMagenta),   // Magenta
+	color.New(color.FgYellow),    // Yellow
+	color.New(color.FgCyan),      // Cyan
+	color.New(color.FgWhite),     // White
+	color.New(color.FgHiBlack),   // Black
+	color.New(color.FgHiGreen),   // Bright Green
+	color.New(color.FgHiYellow),  // Bright Yellow
+	color.New(color.FgHiBlue),    // Bright Blue
+	color.New(color.FgHiMagenta), // Bright Magenta
+	color.New(color.FgHiCyan),    // Bright Cyan
+	color.New(color.FgHiRed),     // Bright Red
 }
 
-func RunCommandWithColor(cmdStr string, wg *sync.WaitGroup, errChan chan error, stdErrChan chan string) {
-
+func RunCommandParallelyWithColor(cmdStr string, wg *sync.WaitGroup, errChan chan error, stdErrChan chan string) {
 	// Decrement the WaitGroup counter when the function exits
 	defer wg.Done()
-
-	// Define an array of colors for legibility
-	colors := []*color.Color{
-		color.New(color.FgGreen),     // Green
-		color.New(color.FgBlue),      // Blue
-		color.New(color.FgMagenta),   // Magenta
-		color.New(color.FgYellow),    // Yellow
-		color.New(color.FgCyan),      // Cyan
-		color.New(color.FgWhite),     // White
-		color.New(color.FgHiBlack),   // Black
-		color.New(color.FgHiGreen),   // Bright Green
-		color.New(color.FgHiYellow),  // Bright Yellow
-		color.New(color.FgHiBlue),    // Bright Blue
-		color.New(color.FgHiMagenta), // Bright Magenta
-		color.New(color.FgHiCyan),    // Bright Cyan
-		color.New(color.FgHiRed),     // Bright Red
-	}
-
-	// Pick a color based on the command string
-	colorIndex := hashString(cmdStr) % uint32(len(colors))
-	cmdColor := colors[colorIndex]
-	erroredColor := color.New(color.FgRed)
-	// Print the command in the selected color
-	cmdColor.Printf("Running command: %s\n", cmdStr)
-
-	// Create a command object
-	cmd := GetCommand(cmdStr)
-	// Capture the output and error streams
-	stdout, _ := cmd.StdoutPipe()
-	stderr, _ := cmd.StderrPipe()
-
-	// Start the command
-	if err := cmd.Start(); err != nil {
-		erroredColor.Printf("Error starting command: %v\n", err)
-		errChan <- err
-		return
-	}
-
-	// Create a goroutine to print the output and error in the same color
-	go PrintColoredCmdOutput(stdout, cmdColor)
-
-	// Create a goroutine to print the error in the same color
-	go GetStdErr(stderr, cmdColor, stdErrChan)
-	// Wait for the command to finish
-
-	if err := cmd.Wait(); err != nil {
-		erroredColor.Printf("Error running command: %v\n", cmdStr)
-		errChan <- err
-		return
-	}
+	isInteractive := false
+	RunCommand(cmdStr, errChan, stdErrChan, isInteractive)
 }
 
 // Simple hash function to generate an index from a string
@@ -108,4 +71,40 @@ func GetStdErr(p io.ReadCloser, c *color.Color, stdErrChan chan string) {
 func PrintError(err string) {
 	erroredColor := color.New(color.FgRed)
 	erroredColor.Printf(err)
+}
+
+func RunCommand(cmdStr string, errChan chan error, stdErrChan chan string, isInteractive bool) {
+	colorIndex := hashString(cmdStr) % uint32(len(colors))
+	cmdColor := colors[colorIndex]
+	erroredColor := color.New(color.FgRed)
+	// Print the command in the selected color
+	cmdColor.Printf("Running command: %s\n", cmdStr)
+
+	// Create a command object
+	cmd := exec.Command("sh", "-c", cmdStr)
+	// Capture the output and error streams
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+	if isInteractive {
+		cmd.Stdin = os.Stdin
+	}
+	// Start the command
+	if err := cmd.Start(); err != nil {
+		erroredColor.Printf("Error starting command: %v\n", err)
+		errChan <- err
+		return
+	}
+
+	// Create a goroutine to print the output and error in the same color
+	go PrintColoredCmdOutput(stdout, cmdColor)
+
+	// Create a goroutine to print the error in the same color
+	go GetStdErr(stderr, cmdColor, stdErrChan)
+	// Wait for the command to finish
+
+	if err := cmd.Wait(); err != nil {
+		erroredColor.Printf("Error running command: %v\n", cmdStr)
+		errChan <- err
+		return
+	}
 }

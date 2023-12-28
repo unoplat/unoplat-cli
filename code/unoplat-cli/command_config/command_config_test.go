@@ -38,6 +38,7 @@ func TestParser(t *testing.T) {
 			for _, mappedCommand := range config.MappedCommands {
 				fmt.Printf("  ID: %s\n", mappedCommand.ID)
 				fmt.Printf("  Command: %s\n", mappedCommand.Command)
+				fmt.Printf("  IsInteractive: %v\n", mappedCommand.IsInteractive)
 				fmt.Println("  Dependencies:")
 				for _, dependency := range mappedCommand.Dependency {
 					fmt.Printf("    %s\n", dependency)
