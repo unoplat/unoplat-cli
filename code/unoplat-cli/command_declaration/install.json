@@ -1,0 +1,19 @@
+{
+    "cmdName": "install",
+    "mapped_commands": [{
+      "id":"cmd1",
+      "command": "echo cmd1",
+      "dependency": []
+    },
+    {
+      "id":"cmd2",
+      "command": "echo cmd2",
+      "dependency": []
+    },
+    {
+      "id":"cmd3",
+      "command": "echo cmd3",
+      "dependency": ["cmd1"]
+    }
+  ]
+}
