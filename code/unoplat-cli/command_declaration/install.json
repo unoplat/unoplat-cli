@@ -1,0 +1,20 @@
+{
+    "cmdName": "install",
+    "mapped_commands": [{
+      "id":"cmd1",
+      "command": "step ca init --name \"MyRootCA\" --dns \"rootca.example.com\" --address \"localhost:8443\" --provisioner \"admin\"",
+      "dependency": [],
+      "is_interactive": true
+    },
+    {
+      "id":"cmd2",
+      "command": "echo cmd2",
+      "dependency": []
+    },
+    {
+      "id":"cmd3",
+      "command": "echo cmd3",
+      "dependency": ["cmd1"]
+    }
+  ]
+}
