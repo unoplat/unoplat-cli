@@ -2,7 +2,7 @@
     "cmdName": "install",
     "mapped_commands": [{
       "id":"cmd1",
-      "command": "echo enter your name && read x && echo Your name is $x",
+      "command": "step ca init --name \"MyRootCA\" --dns \"rootca.example.com\" --address \"localhost:8443\" --provisioner \"admin\"",
       "dependency": [],
       "is_interactive": true
     },

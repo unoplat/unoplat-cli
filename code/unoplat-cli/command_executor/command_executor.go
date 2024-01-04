@@ -83,25 +83,34 @@ func RunCommand(cmdStr string, errChan chan error, stdErrChan chan string, isInt
 	// Create a command object
 	cmd := exec.Command("sh", "-c", cmdStr)
 	// Capture the output and error streams
-	stdout, _ := cmd.StdoutPipe()
-	stderr, _ := cmd.StderrPipe()
+
 	if isInteractive {
 		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Start(); err != nil {
+			erroredColor.Printf("Error starting command: %v\n", err)
+			errChan <- err
+			return
+		}
+	} else {
+		stdout, _ := cmd.StdoutPipe()
+		stderr, _ := cmd.StderrPipe()
+		// Start the command
+		if err := cmd.Start(); err != nil {
+			erroredColor.Printf("Error starting command: %v\n", err)
+			errChan <- err
+			return
+		}
+
+		// Create a goroutine to print the output and error in the same color
+		go PrintColoredCmdOutput(stdout, cmdColor)
+
+		// Create a goroutine to print the error in the same color
+		go GetStdErr(stderr, cmdColor, stdErrChan)
+		// Wait for the command to finish
+
 	}
-	// Start the command
-	if err := cmd.Start(); err != nil {
-		erroredColor.Printf("Error starting command: %v\n", err)
-		errChan <- err
-		return
-	}
-
-	// Create a goroutine to print the output and error in the same color
-	go PrintColoredCmdOutput(stdout, cmdColor)
-
-	// Create a goroutine to print the error in the same color
-	go GetStdErr(stderr, cmdColor, stdErrChan)
-	// Wait for the command to finish
-
 	if err := cmd.Wait(); err != nil {
 		erroredColor.Printf("Error running command: %v\n", cmdStr)
 		errChan <- err
